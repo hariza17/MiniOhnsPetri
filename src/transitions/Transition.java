@@ -25,7 +25,7 @@ public abstract class Transition extends JButton implements ActionListener {
     private String name;
     private boolean state;
     //
-    private Timer timer = new Timer(1000,this);
+    private Timer timer = new Timer(1000, this);
     //
     private ArrayList<Arc> list_arc = new ArrayList<>();
 
@@ -99,7 +99,7 @@ public abstract class Transition extends JButton implements ActionListener {
     }
 
     public void setState(boolean state) {
-        this.state = true;
+        this.state = state;
     }
 
     public Timer getTimer() {
@@ -108,5 +108,9 @@ public abstract class Transition extends JButton implements ActionListener {
 
     public void setTimer(Timer timer) {
         this.timer = timer;
+    }
+
+    public void setStepTime(int delay) {
+        timer.setDelay(delay);
     }
 }

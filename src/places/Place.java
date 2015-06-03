@@ -27,9 +27,8 @@ public class Place extends JButton {
     private ArrayList<Token> tokens_list = new ArrayList<>();
     private String name;
 
-    public Place(long id, String name) {
-        this.id = id;
-        this.name = name;
+    public Place() {
+
         init();
     }
 
@@ -65,6 +64,16 @@ public class Place extends JButton {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     public ArrayList<Token> getTokens_list() {

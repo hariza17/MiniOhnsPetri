@@ -32,9 +32,9 @@ public class InhibitorArc extends Arc {
     public boolean checkArc() {
         int num_token = getPlace().getListTokensSize();
         
-        if (num_token == getMultiplicidad()) {
+        if (num_token >= getMultiplicidad()) {
             getTransition().setState(false);
-            //System.out.println("Bloqueo Inhibitor: (" + getClass().getName() + " Arc) :" + getId());
+            System.out.println("false");
             return false;
         } else {
             getTransition().setState(true);

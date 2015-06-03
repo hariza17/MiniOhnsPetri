@@ -1,6 +1,10 @@
 package util;
 
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Random;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /*
@@ -15,48 +19,143 @@ public class ProbabilityFunctions {
 
     private static Random random;    // pseudo-random number generator
     private static long seed;        // pseudo-random number generator seed
-    private int type_probability_functions;
-    private double probability_value;
+    private double uniform;
+    private double normal;
+    private double exponencial;
+    DialogPExponential de;
+    DialogPNormal dn;
+    DialogPUniform du;
+    double a = 1, b = 2, aMean = 1, aVariance = 0.5, lambda = 0.9;
+    int contador = 0;
 
-    // static initializer
+    public ProbabilityFunctions(JFrame frame) {
+        de = new DialogPExponential(frame, true);
+        dn = new DialogPNormal(frame, true);
+        du = new DialogPUniform(frame, true);
+
+        try {
+            dn.getBtnAceptar().addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (contador == 0) {
+                        aMean = Double.parseDouble(dn.getTxtMean().getText());
+                        aVariance = Double.parseDouble(dn.getTxtVariance().getText());
+                        contador++;
+                    }
+
+                    dn.dispose();
+
+                }
+            });
+
+            du.getBtnAceptar().addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (contador == 0) {
+                        a = Double.parseDouble(du.getTxtMin().getText());
+                        b = Double.parseDouble(du.getTxtMax().getText());
+                        if (!(a < b)) {
+                            JOptionPane.showMessageDialog(null, "Invalid range");
+                        }
+                    }
+
+                    du.dispose();
+
+                }
+            });
+
+            de.getBtnAceptar().addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (contador == 0) {
+                        lambda = Double.parseDouble(de.getTxtLambda().getText());
+
+                        if (!(lambda > 0.0)) {
+                            JOptionPane.showMessageDialog(null, "Rate lambda must be positive");
+                        }
+                    }
+                    de.dispose();
+
+                }
+            });
+
+        } catch (NumberFormatException | HeadlessException e) {
+            JOptionPane.showMessageDialog(null, "Data Error: " + e.getMessage());
+
+        } finally {
+            dn.dispose();
+        }
+    }
+
     static {
         // this is how the seed was set in Java 1.4
         seed = System.currentTimeMillis();
         random = new Random(seed);
     }
 
-    // don't instantiate
-    private ProbabilityFunctions() {
+    public double getUniform() {
+
+        uniform = a + uniform() * (b - a);
+        return uniform;
     }
 
-    /**
-     * Sets the seed of the psedurandom number generator.
-     */
+    public double getNormal() {
+        Random fRandom = new Random();
+        normal = aMean + fRandom.nextGaussian() * aVariance;
+        return normal;
+    }
+
+    public double getExponencial() {
+        exponencial = -Math.log(1 - uniform()) / lambda;
+        return exponencial;
+    }
+
+    public void setNormal() {
+        dn.setVisible(true);
+
+
+    }
+
+    public void setUniform() {
+        du.setVisible(true);
+        try {
+        } catch (NumberFormatException | HeadlessException e) {
+            JOptionPane.showMessageDialog(null, "Data Error: " + e.getMessage());
+        } finally {
+            du.dispose();
+        }
+    }
+
+    public void setExponential() {
+        de.setVisible(true);
+        try {
+        } catch (NumberFormatException | HeadlessException ed) {
+            JOptionPane.showMessageDialog(null, "Data Error: " + ed.getMessage());
+        } finally {
+            de.dispose();
+        }
+    }
+//
+
+    //-----------------------------------------------------------
+    //__________________________________________________________
+    public ProbabilityFunctions() {
+    }
+
     public static void setSeed(long s) {
         seed = s;
         random = new Random(seed);
     }
 
-    /**
-     * Returns the seed of the psedurandom number generator.
-     */
     public static long getSeed() {
         return seed;
     }
 
-    /**
-     * Return real number uniformly in [0, 1).
-     */
     public static double uniform() {
 
         return random.nextDouble();
     }
 
-    /**
-     * Returns an integer uniformly between 0 (inclusive) and N (exclusive).
-     *
-     * @throws IllegalArgumentException if <tt>N <= 0</tt>
-     */
     public static int uniform(int N) {
         if (N <= 0) {
             throw new IllegalArgumentException("Parameter N must be positive");
@@ -64,31 +163,11 @@ public class ProbabilityFunctions {
         return random.nextInt(N);
     }
 
-    public void normal(double aMean, double aVariance) {
-        Random fRandom = new Random();
-        this.probability_value = aMean + fRandom.nextGaussian() * aVariance;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    //  STATIC METHODS BELOW RELY ON JAVA.UTIL.RANDOM ONLY INDIRECTLY VIA
-    //  THE STATIC METHODS ABOVE.
-    ///////////////////////////////////////////////////////////////////////////
-    /**
-     * Returns a real number uniformly in [0, 1).
-     *
-     * @deprecated clearer to use {@link #uniform()}
-     */
     public static double random() {
         return uniform();
     }
 
-    /**
-     * Returns an integer uniformly in [a, b).
-     *
-     * @throws IllegalArgumentException if <tt>b <= a</tt>
-     * @throws IllegalArgumentException if <tt>b - a >= Integer.MAX_VALUE</tt>
-     */
-    public static int uniform(int a, int b) {
+    public static double uniform(int a, int b) {
         if (b <= a) {
             throw new IllegalArgumentException("Invalid range");
         }
@@ -98,82 +177,33 @@ public class ProbabilityFunctions {
         return a + uniform(b - a);
     }
 
-    /**
-     * Returns a real number uniformly in [a, b).
-     *
-     * @throws IllegalArgumentException unless <tt>a < b</tt>
-     */
-    public void uniform(double a, double b) {
-        if (!(a < b)) {
-            JOptionPane.showMessageDialog(null, "Invalid range");
-        }
-        this.probability_value = a + uniform() * (b - a);
-    }
-
-    public void exp(double lambda) {
-        if (!(lambda > 0.0)) {
-            JOptionPane.showMessageDialog(null, "Rate lambda must be positive");
-        }
-        this.probability_value = -Math.log(1 - uniform()) / lambda;
-    }
-
-    /**
-     * Returns a boolean, which is true with probability p, and false otherwise.
-     *
-     * @throws IllegalArgumentException unless <tt>p >= 0.0</tt> and <tt>p <=
-     * 1.0</tt>
-     */
-    public static boolean bernoulli(double p) {
+    public boolean bernoulli(double p) {
         if (!(p >= 0.0 && p <= 1.0)) {
             throw new IllegalArgumentException("Probability must be between 0.0 and 1.0");
         }
         return uniform() < p;
     }
 
-    /**
-     * Returns a boolean, which is true with probability .5, and false
-     * otherwise.
-     */
-    public static boolean bernoulli() {
+    public boolean bernoulli() {
         return bernoulli(0.5);
     }
 
-    /**
-     * Returns a real number with a standard Gaussian distribution.
-     */
-    /**
-     * Returns a real number from a gaussian distribution with given mean and
-     * stddev
-     */
-    /**
-     * Returns an integer with a geometric distribution with mean 1/p.
-     *
-     * @throws IllegalArgumentException unless <tt>p >= 0.0</tt> and <tt>p <=
-     * 1.0</tt>
-     */
-    public static int geometric(double p) {
+    public int geometric(double p) {
         if (!(p >= 0.0 && p <= 1.0)) {
             throw new IllegalArgumentException("Probability must be between 0.0 and 1.0");
         }
-        // using algorithm given by Knuth
+
         return (int) Math.ceil(Math.log(uniform()) / Math.log(1.0 - p));
     }
 
-    /**
-     * Return an integer with a Poisson distribution with mean lambda.
-     *
-     * @throws IllegalArgumentException unless <tt>lambda > 0.0</tt> and not
-     * infinite
-     */
-    public static int poisson(double lambda) {
+    public int poisson(double lambda) {
         if (!(lambda > 0.0)) {
             throw new IllegalArgumentException("Parameter lambda must be positive");
         }
         if (Double.isInfinite(lambda)) {
             throw new IllegalArgumentException("Parameter lambda must not be infinite");
         }
-        // using algorithm given by Knuth
-        // see http://en.wikipedia.org/wiki/Poisson_distribution
+
         int k = 0;
         double p = 1.0;
         double L = Math.exp(-lambda);
@@ -184,33 +214,18 @@ public class ProbabilityFunctions {
         return k - 1;
     }
 
-    /**
-     * Returns a real number with a Pareto distribution with parameter alpha.
-     *
-     * @throws IllegalArgumentException unless <tt>alpha > 0.0</tt>
-     */
-    public static double pareto(double alpha) {
+    public double pareto(double alpha) {
         if (!(alpha > 0.0)) {
             throw new IllegalArgumentException("Shape parameter alpha must be positive");
         }
         return Math.pow(1 - uniform(), -1.0 / alpha) - 1.0;
     }
 
-    /**
-     * Returns a real number with a Cauchy distribution.
-     */
-    public static double cauchy() {
+    public double cauchy() {
         return Math.tan(Math.PI * (uniform() - 0.5));
     }
 
-    /**
-     * Returns a number from a discrete distribution: i with probability a[i].
-     * throws IllegalArgumentException if sum of array entries is not (very
-     * nearly) equal to <tt>1.0</tt>
-     * throws IllegalArgumentException unless <tt>a[i] >= 0.0</tt> for each
-     * index <tt>i</tt>
-     */
-    public static int discrete(double[] a) {
+    public int discrete(double[] a) {
         double EPSILON = 1E-14;
         double sum = 0.0;
         for (int i = 0; i < a.length; i++) {
@@ -237,15 +252,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Returns a real number from an exponential distribution with rate lambda.
-     *
-     * @throws IllegalArgumentException unless <tt>lambda > 0.0</tt>
-     */
-    /**
-     * Rearrange the elements of an array in random order.
-     */
-    public static void shuffle(Object[] a) {
+    public void shuffle(Object[] a) {
         int N = a.length;
         for (int i = 0; i < N; i++) {
             int r = i + uniform(N - i);     // between i and N-1
@@ -255,10 +262,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Rearrange the elements of a double array in random order.
-     */
-    public static void shuffle(double[] a) {
+    public void shuffle(double[] a) {
         int N = a.length;
         for (int i = 0; i < N; i++) {
             int r = i + uniform(N - i);     // between i and N-1
@@ -268,10 +272,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Rearrange the elements of an int array in random order.
-     */
-    public static void shuffle(int[] a) {
+    public void shuffle(int[] a) {
         int N = a.length;
         for (int i = 0; i < N; i++) {
             int r = i + uniform(N - i);     // between i and N-1
@@ -281,10 +282,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Rearrange the elements of the subarray a[lo..hi] in random order.
-     */
-    public static void shuffle(Object[] a, int lo, int hi) {
+    public void shuffle(Object[] a, int lo, int hi) {
         if (lo < 0 || lo > hi || hi >= a.length) {
             throw new IndexOutOfBoundsException("Illegal subarray range");
         }
@@ -296,10 +294,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Rearrange the elements of the subarray a[lo..hi] in random order.
-     */
-    public static void shuffle(double[] a, int lo, int hi) {
+    public void shuffle(double[] a, int lo, int hi) {
         if (lo < 0 || lo > hi || hi >= a.length) {
             throw new IndexOutOfBoundsException("Illegal subarray range");
         }
@@ -311,10 +306,7 @@ public class ProbabilityFunctions {
         }
     }
 
-    /**
-     * Rearrange the elements of the subarray a[lo..hi] in random order.
-     */
-    public static void shuffle(int[] a, int lo, int hi) {
+    public void shuffle(int[] a, int lo, int hi) {
         if (lo < 0 || lo > hi || hi >= a.length) {
             throw new IndexOutOfBoundsException("Illegal subarray range");
         }

@@ -1,5 +1,8 @@
 package gui;
 
+import util.DialogPUniform;
+import util.DialogPNormal;
+import util.DialogPExponential;
 import places.Place;
 import transitions.TimedTransition;
 import transitions.ImmediateTransition;
@@ -9,18 +12,28 @@ import arcs.Arc;
 import arcs.InhibitorArc;
 import arcs.OutputArc;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import static java.awt.image.ImageObserver.WIDTH;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
-import javax.swing.Timer;
+import javax.swing.JOptionPane;
+import util.ProbabilityFunctions;
 
 /*
  * To change this template, choose Tools | Templates
@@ -32,9 +45,8 @@ import javax.swing.Timer;
  */
 public class MiniOnsWindows extends JFrame implements ActionListener {
 
-    Timer t = new Timer(1000, this);
+    
     private JLabel fondo = new JLabel(new ImageIcon("src/images/fondo.png"));
-    private int op = 0;
     //Opciones Places
     int place_id = 0;
     ArrayList<Place> arrayPlaces = new ArrayList<>();
@@ -69,29 +81,47 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
     PanelInhibitor pinhibitor = new PanelInhibitor();
     PanelTimed ptimed = new PanelTimed();
     PanelImmediate pimmediate = new PanelImmediate();
+    //JintenalFrame Probalities
     JButton btnplay = new JButton(new ImageIcon("src/images/play.png"));
     //
+    ProbabilityFunctions probability;
     int bandera_play = 0;
 //    int id=0;
 //    int id=0;
+    JFrame frame = this;
 
     public MiniOnsWindows() {
+
         init();
         events();
+        panels();
+        //mapa1();
     }
 
     private void init() {
         //
-        setSize(1264, 659);
+        setSize(1274, 669);
         //
         setLocationRelativeTo(null);
         //
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        fondo.setSize(getWidth(), getHeight());
+
+
+//        pn = new PanelPNormal(this);
+//        pu = new PanelPUniform(this);
+       
+
+        fondo.setSize(getWidth() - 10, getHeight() - 10);
         fondo.setLayout(null);
         fondo.setLocation(0, 0);
         add(fondo);
+
+
+
+//        fondo.add(pn);
+//        fondo.add(pu);
+
 
 
         btnPlace.setSize(92, 92);
@@ -149,21 +179,42 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnplay.setCursor(new Cursor(12));
         fondo.add(btnplay);
 
+    }
 
-        pplace.setLocation(949, 359);
-        pplace.setLocation(0, 0);
+    private void panels() {
+
         fondo.add(pplace);
-//
-//
-//
-        mapa1();
+        fondo.add(pinput);
+        fondo.add(pinhibitor);
+        fondo.add(poutput);
+        //
+        fondo.add(ptimed);
+        fondo.add(pimmediate);
+        ptimed.getTxt_idImmediate().setEditable(false);
+        ptimed.getTxtNobreImmediate().setEditable(false);
 
+
+    }
+
+    private ProbabilityFunctions selectTypeProbability() {
+
+        return probability;
+    }
+
+    private void controlProperty(Component panel) {
+        pplace.setVisible(false);
+        pinput.setVisible(false);
+        poutput.setVisible(false);
+        pinhibitor.setVisible(false);
+        pimmediate.setVisible(false);
+        ptimed.setVisible(false);
+        panel.setVisible(true);
     }
 
     private void mapa1() {
 
-        final Place p1 = new Place(1, "Queue");
-        Place p2 = new Place(2, "Sevice");
+        final Place p1 = new Place();
+        Place p2 = new Place();
 //
         final TimedTransition tt1 = new TimedTransition();
         tt1.setName("Tt1");
@@ -224,8 +275,8 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
 
     private void mapa2() {
 
-        final Place p1 = new Place(1, "Queue");
-        Place p2 = new Place(2, "Sevice");
+        final Place p1 = new Place();
+        Place p2 = new Place();
 //
         final TimedTransition tt1 = new TimedTransition();
         tt1.setName("Tt1");
@@ -288,9 +339,39 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
 
     private void events() {
 
+        final JComboBox combo = ptimed.getSelectProbality();
+
+        combo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int op = combo.getSelectedIndex();
+                combo.setSelectedIndex(op);
+                probability = new ProbabilityFunctions(frame);
+
+
+                switch (op) {
+                    case 0:
+                        JOptionPane.showMessageDialog(null, "Select a pribability function");
+                        break;
+
+                    case 1:
+                        probability.setExponential();
+                        break;
+                    case 2:
+                        probability.setNormal();
+                        break;
+                    case 3:
+                        probability.setUniform();
+                        break;
+
+                }
+
+            }
+        });
         btnPlace.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(pplace);
                 btnPlace.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnInput.setBorder(null);
                 btnOutput.setBorder(null);
@@ -311,6 +392,7 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnInput.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(pinput);
                 btnInput.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnPlace.setBorder(null);
                 btnOutput.setBorder(null);
@@ -331,6 +413,8 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnOutput.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(poutput);
+
                 btnOutput.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnInput.setBorder(null);
                 btnPlace.setBorder(null);
@@ -350,6 +434,7 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnInhibitor.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(pinhibitor);
                 btnInhibitor.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnPlace.setBorder(null);
                 btnInput.setBorder(null);
@@ -369,6 +454,7 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnImmediate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(pimmediate);
                 btnImmediate.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnPlace.setBorder(null);
                 btnInput.setBorder(null);
@@ -388,6 +474,7 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         btnTimed.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                controlProperty(ptimed);
                 btnTimed.setBorder(BorderFactory.createLineBorder(Color.blue));
                 btnPlace.setBorder(null);
                 btnInput.setBorder(null);
@@ -401,6 +488,8 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
                 vandera_inhibitor = false;
                 vandera_timed = true;
                 vandera_immediate = false;
+
+
             }
         });
 
@@ -409,60 +498,96 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
             public void mouseClicked(MouseEvent e) {
 
                 if (vandera_place) {
-                    final Place place = new Place(1, "");
-                    place.setLocation(e.getX() - place.getWidth() / 2, e.getY() - place.getHeight() / 2);
-                    fondo.add(place);
-                    arrayPlaces.add(place);
-                    fondo.repaint();
+                    if (!pplace.getTxtNobrePlace().getText().equals("")) {
+                        final Place place = new Place();
+                        place.setLocation(e.getX() - place.getWidth() / 2, e.getY() - place.getHeight() / 2);
+                        fondo.add(place);
+                        arrayPlaces.add(place);
+                        fondo.repaint();
+                        pplace.getTxt_idPlace().setText("" + arrayPlaces.size());
+                        place.setName(pplace.getTxtNobrePlace().getText());
+                        place.setId(Long.parseLong(pplace.getTxt_idPlace().getText()));
 
-                    place.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            if (vandera_input || vandera_output || vandera_inhibitor) {
-                                miPlace = place;
-                                place.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                        place.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if (vandera_input || vandera_output || vandera_inhibitor) {
+                                    miPlace = place;
+                                    place.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                                }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Set Place name");
+                    }
                 }
                 if (vandera_timed) {
-                    final Transition t = new TimedTransition();
-                    t.setLocation(e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2);
-                    fondo.add(t);
-                    fondo.repaint();
-                    arrayTransition.add(t);
-                    t.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            //if (vandera_input || vandera_output || vandera_inhibitor) {
-                            miTransition = t;
-                            t.setBorder(BorderFactory.createLineBorder(Color.red));
-                            Arc ar = createArc();
-                            t.addArc(ar);
-                            //}
+                    if (ptimed.getSelectProbality().getSelectedIndex() != 0) {
 
-                        }
-                    });
+                        final TimedTransition t = new TimedTransition();
+                        t.setLocation(e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2);
+                        fondo.add(t);
+                        fondo.repaint();
+                        arrayTransition.add(t);
 
+                        ptimed.getTxtNobreImmediate().setText("Timed t: " + arrayTransition.size());
+
+                        ptimed.getTxt_idImmediate().setText("" + (arrayTransition.size()));
+
+                        t.setId(Long.parseLong(ptimed.getTxt_idImmediate().getText()));
+                        t.setName(ptimed.getTxtNobreImmediate().getText());
+                        t.setP(selectTypeProbability());
+
+                        t.setType_probability_functions(ptimed.getSelectProbality().getSelectedIndex());
+                        t.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                //if (vandera_input || vandera_output || vandera_inhibitor) {
+                                miTransition = t;
+
+                                t.setBorder(BorderFactory.createLineBorder(Color.red));
+
+                                Arc ar = createArc();
+                                if (ar != null) {
+                                    t.addArc(ar);
+                                }
+                                //}
+
+                            }
+                        });
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Select a probability function");
+                    }
                 }
-
                 if (vandera_immediate) {
-                    final Transition t = new ImmediateTransition(1);
-                    t.setLocation(e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2);
-                    fondo.add(t);
-                    fondo.repaint();
-                    arrayTransition.add(t);
-                    t.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            miTransition = t;
-                            t.setBorder(BorderFactory.createLineBorder(Color.red));
-                            Arc ar = createArc();
-                            t.addArc(ar);
-                        }
-                    });
-                }
+                    if (!pimmediate.getTxtProbability().getText().equals("")) {
+                        final ImmediateTransition t = new ImmediateTransition(1);
+                        t.setLocation(e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2);
+                        fondo.add(t);
+                        fondo.repaint();
+                        arrayTransition.add(t);
+                        pimmediate.getTxtNobreImmediate().setText("Immediate T: " + arrayTransition.size());
+                        pimmediate.getTxt_idImmediate().setText("" + arrayTransition.size());
 
+                        t.setName(pimmediate.getTxtNobreImmediate().getText());
+                        t.setId(Long.parseLong(pimmediate.getTxt_idImmediate().getText()));
+                        t.setProbability(Double.parseDouble(pimmediate.getTxtProbability().getText()));
+                        t.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                miTransition = t;
+                                t.setBorder(BorderFactory.createLineBorder(Color.red));
+                                Arc ar = createArc();
+                                if (ar != null) {
+                                    t.addArc(ar);
+                                }
+                            }
+                        });
+                    } else {
+
+                        JOptionPane.showMessageDialog(null, "Set probability");
+                    }
+                }
             }
 
             @Override
@@ -481,7 +606,6 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
             public void mouseExited(MouseEvent e) {
             }
         });
-
 
         btnplay.addActionListener(new ActionListener() {
             @Override
@@ -505,41 +629,82 @@ public class MiniOnsWindows extends JFrame implements ActionListener {
         if (miPlace != null && miTransition != null) {
 
             if (vandera_input) {
-                arc = new InputArc(1, 1, miPlace, miTransition);
+                if (!pinput.getTxtMultiplicity().getText().equals("")) {
+                    pinput.getTxtIdInput().setText("" + arrayArcs.size());
+                    arc = new InputArc(Long.parseLong(pinput.getTxtIdInput().getText()), Integer.parseInt(pinput.getTxtMultiplicity().getText()), miPlace, miTransition);
+                }
             }
 
             if (vandera_output) {
-                arc = new OutputArc(1, 1, miPlace, miTransition);
+                if (!poutput.getTxtMultiplicity().getText().equals("")) {
+                    poutput.getTxtIdOutput().setText("" + arrayArcs.size());
+                    arc = new OutputArc(Long.parseLong(poutput.getTxtIdOutput().getText()), Integer.parseInt(poutput.getTxtMultiplicity().getText()), miPlace, miTransition);
+                }
             }
 
             if (vandera_inhibitor) {
-                arc = new InhibitorArc(1, 1, miPlace, miTransition);
+                if (!pinhibitor.getTxtMultiplicity().getText().equals("")) {
+                    pinhibitor.getTxtIdOutput().setText("" + arrayArcs.size());
+                    arc = new InhibitorArc(Long.parseLong(pinhibitor.getTxtIdOutput().getText()), Integer.parseInt(pinhibitor.getTxtMultiplicity().getText()), miPlace, miTransition);
+                }
             }
-            arc.setSize(fondo.getWidth(), fondo.getHeight());
+            try {
+                arc.setSize(fondo.getWidth(), fondo.getHeight());
 
-            arrayArcs.add(arc);
+                arrayArcs.add(arc);
 
-            for (int i = 0; i < arrayPlaces.size(); i++) {
-                Place place = arrayPlaces.get(i);
-                place.setBorder(null);
+                for (int i = 0; i < arrayPlaces.size(); i++) {
+                    Place place = arrayPlaces.get(i);
+                    place.setBorder(null);
 
+                }
+                for (int i = 0; i < arrayTransition.size(); i++) {
+                    Transition tra = arrayTransition.get(i);
+                    tra.setBorder(null);
+
+                }
+                miPlace = null;
+                miTransition = null;
+                fondo.add(arc);
+                fondo.repaint();
+                vandera_output = false;
+                vandera_input = false;
+                vandera_inhibitor = false;
+                return arc;
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error: Set miltiplicity" + e.getMessage());
             }
-            for (int i = 0; i < arrayTransition.size(); i++) {
-                Transition tra = arrayTransition.get(i);
-                tra.setBorder(null);
-
-            }
-            miPlace = null;
-            miTransition = null;
-            fondo.add(arc);
-            fondo.repaint();
         }
 
-        return arc;
+        return null;
     }
 
     public static void main(String args[]) {
-        new MiniOnsWindows().setVisible(true);
+
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+
+
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MiniOnsWindows.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MiniOnsWindows().setVisible(true);
+
+            }
+        });
+
     }
 
     @Override

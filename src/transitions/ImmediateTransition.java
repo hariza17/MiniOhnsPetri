@@ -41,7 +41,7 @@ public class ImmediateTransition extends Transition {
         getTimer().start();
         ran_pribability = Math.random();
 //        time = 0 + (int) (Math.random() * ((10 - 0) + 1));
-        //System.out.println("time probability: " + ran_pribability);
+        //System.out.println("Probability: " + ran_pribability);
     }
 
     @Override
@@ -49,13 +49,17 @@ public class ImmediateTransition extends Transition {
 
 
         if (ran_pribability <= this.probability) {
+            //System.out.println("" + getList_arc().size());
             for (int i = 0; i < getList_arc().size(); i++) {
                 Arc arc = getList_arc().get(i);
-               
-                    //System.out.println("Si" + arc.getTransition().getName());
+                arc.checkArc();
+            }
+            for (int i = 0; i < getList_arc().size(); i++) {
+                Arc arc = getList_arc().get(i);
+                if (arc.getTransition().getState()) {
                     arc.run();
-             
-                //activate();
+                    activate();
+                }
             }
         } else {
             activate();

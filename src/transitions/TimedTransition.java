@@ -3,10 +3,12 @@ package transitions;
 import arcs.Arc;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import util.ProbabilityFunctions;
 
 /*
  * To change this template, choose Tools | Templates
@@ -21,6 +23,8 @@ public class TimedTransition extends Transition {
     private double time;
     private double global_time = 0;
     private int type_probability_functions;
+    private ProbabilityFunctions p;
+    private ArrayList<Double> listTime = new ArrayList<>();
 
     public TimedTransition() {
         setIcon(new ImageIcon("src/images/timed.png"));
@@ -40,41 +44,50 @@ public class TimedTransition extends Transition {
         this.global_time = global_time;
     }
 
+    public ProbabilityFunctions getP() {
+
+        return p;
+    }
+
+    public void setP(ProbabilityFunctions p) {
+        this.p = p;
+    }
+
     @Override
     public void activate() {
-        getTimer().start();
-        time = 1 + (int) (Math.random() * ((4 - 1) + 1));
-        System.out.println("Activate");
-        //time = 3;
+        if (!getTimer().isRunning()) {
+            getTimer().start();
+        }
+        time = getTimeT();
+        System.out.println("Time 1:" + getTimeT());
+        this.listTime.add(time);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
         this.global_time++;
-        this.time--;
-//        System.out.println("N" + time);
-        System.out.println("Time: " + time + ", Global: " + global_time);
-        if (getTime() == 0.0) {
-
-            System.out.println("List: " + getList_arc().size());
+        time = time - 1.0;
+        //System.out.println("Time 2:" + time);
+        if (time <= 0.0) {
 
             for (int i = 0; i < getList_arc().size(); i++) {
-
                 Arc arc = getList_arc().get(i);
-                //arc.getPlace().setText("" + time);
-                // if (arc.checkArc()) {
-//                System.out.println("SS" + time);
+                arc.checkArc();
+                System.out.println("" + arc.getTransition().getState());
+            }
+            for (int i = 0; i < getList_arc().size(); i++) {
+                Arc arc = getList_arc().get(i);
                 arc.run();
-                arc.showTokensList();
                 getParent().repaint();
+                activate();
                 //
                 // }
                 //System.out.println("Aqui" + arc.getClass().getName());
 
             }
 
-            activate();
+            //activate();
         }
 
     }
@@ -87,7 +100,27 @@ public class TimedTransition extends Transition {
         this.type_probability_functions = type_probability_functions;
     }
 
-    public double getTime() {
+    public double getTimeT() {
+        switch (type_probability_functions) {
+            case 0:
+                JOptionPane.showMessageDialog(null, "Selet a probility function");
+                break;
+            case 1:
+                System.out.println("Expo");
+                this.time = this.p.getExponencial();
+                break;
+            case 2:
+                System.out.println("Norma");
+
+                this.time = this.p.getNormal();
+                break;
+            case 3:
+                System.out.println("Uni");
+
+                this.time = this.p.getUniform();
+                break;
+
+        }
         return time;
     }
 

@@ -37,15 +37,26 @@ public class OutputArc extends Arc {
     }
 
     @Override
-    public void run() {
-        System.out.println("1Output");
+    public boolean checkArc() {
+        return true;
+    }
 
+    @Override
+    public void run() {
+
+
+        for (int j = 0; j < getTransition().getList_arc().size(); j++) {
+            Arc arc = getTransition().getList_arc().get(j);
+            arc.checkArc();
+        }
         for (int i = 0; i < getMultiplicidad(); i++) {
-            System.out.println("2Output");
-            Token token = new Token(1, 0);
-            getPlace().addToken(token);
-            getPlace().setVisible(false);
-            getPlace().setVisible(true);
+            if (getTransition().getState()) {
+                System.out.println("SSSSS: " + getId());
+                Token token = new Token(1, 0);
+                getPlace().addToken(token);
+                getPlace().setVisible(false);
+                getPlace().setVisible(true);
+            }
 
         }
         //showTokensList();

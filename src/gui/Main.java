@@ -8,7 +8,6 @@ import transitions.Transition;
 import arcs.InhibitorArc;
 import arcs.InputArc;
 import arcs.Arc;
-import java.util.ArrayList;
 
 /*
  * To change this template, choose Tools | Templates
@@ -29,10 +28,10 @@ public class Main {
 
 
 
-        Place p1 = new Place(1, "Place 1");
+        Place p1 = new Place();
         p1.addToken(t1);
 
-        Place p2 = new Place(2, "Place 2");
+        Place p2 = new Place();
         p2.addToken(t2);
         p2.addToken(t3);
 
